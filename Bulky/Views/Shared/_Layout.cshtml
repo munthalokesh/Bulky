@@ -36,7 +36,12 @@
                                 Content Management
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="/Admin/Category/Index">Category</a></li>
+                                <li class="nav-item">
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Category" asp-action="Index">Category</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Product" asp-action="Index">Product</a>
+                                </li>
                               
                                 @* <li><hr class="dropdown-divider"></li> *@
                                 
@@ -62,6 +67,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.tiny.cloud/1/qftlfs4s8wifxieftnwdna32mmfu674tssrwaqnjoeh79f64/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
