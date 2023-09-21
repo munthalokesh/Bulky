@@ -21,7 +21,7 @@ namespace Bulky.Areas.Admin.Controllers
         }
         public IActionResult Index()
         {
-            List<Product> objProductList = _UnitOfWork.ProductRepository.GetAll().ToList();
+            List<Product> objProductList = _UnitOfWork.ProductRepository.GetAll(IncludeProperties:"Category").ToList();
             
             return View(objProductList);
         }
@@ -101,15 +101,15 @@ namespace Bulky.Areas.Admin.Controllers
             return View(obj);
         }
         
-        public IActionResult Delete(int? id)
+        /*public IActionResult Delete(int? id)
         {
             if (id == null || id == 0)
             {
                 return NotFound();
             }
             Product? ProductFromDb = _UnitOfWork.ProductRepository.Get(u => u.Id == id);
-            /*Product? ProductFromDb1 = _db.Categories.FirstOrDefault(u=>u.Id==id);
-            Product? ProductFromDb2 = _db.Categories.Where(u=>u.Id==id).FirstOrDefault();*/
+            *//*Product? ProductFromDb1 = _db.Categories.FirstOrDefault(u=>u.Id==id);
+            Product? ProductFromDb2 = _db.Categories.Where(u=>u.Id==id).FirstOrDefault();*//*
             if (ProductFromDb == null)
 
             {
@@ -130,6 +130,30 @@ namespace Bulky.Areas.Admin.Controllers
             TempData["success"] = "Product deleted successfully";
             return RedirectToAction("Index", "Product");
 
+        }*/
+        #region APi_CALLS
+        public IActionResult GetAll()
+        {
+            List<Product> objProductList = _UnitOfWork.ProductRepository.GetAll(IncludeProperties: "Category").ToList();
+            return Json(objProductList);
         }
+        [HttpDelete]
+        public IActionResult Delete(int ?id)
+        {
+            var ProductToBeDeleted = _UnitOfWork.ProductRepository.Get(u => u.Id == id);
+            if (ProductToBeDeleted == null) 
+            {
+                return Json(new { success = false, message = "Error While deleting" });
+            }
+            var oldImgPath = Path.Combine(_WebHostEnvironment.WebRootPath, ProductToBeDeleted.ImgUrl.Trim('\\'));
+            if (System.IO.File.Exists(oldImgPath))
+            {
+                System.IO.File.Delete(oldImgPath);
+            }
+            _UnitOfWork.ProductRepository.Remove(ProductToBeDeleted);
+            _UnitOfWork.Save();
+            return Json(new { success = true, message = "Deleted Successfully" });
+        }
+        #endregion
     }
 }
