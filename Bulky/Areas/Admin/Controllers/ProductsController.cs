@@ -1,6 +1,8 @@
 ﻿using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Bulky.Utility;
 using Bulky.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace Bulky.Areas.Admin.Controllers
 {
+    [Authorize(Roles = SD.Role_Admin)]
     [Area("Admin")]
     public class ProductController : Controller
     {
