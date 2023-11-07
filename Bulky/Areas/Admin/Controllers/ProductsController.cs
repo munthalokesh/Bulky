@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace Bulky.Areas.Admin.Controllers
 {
-    [Authorize(Roles = SD.Role_Admin)]
+    /*[Authorize(Roles = SD.Role_Admin)]*/
     [Area("Admin")]
     public class ProductController : Controller
     {
