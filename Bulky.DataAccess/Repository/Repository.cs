@@ -24,23 +24,29 @@ namespace Bulky.DataAccess.Repository
             dbSet.Add(entity);
         }
 
-        public T Get(System.Linq.Expressions.Expression<Func<T, bool>> filter, string? IncludeProperties = null)
+        public T Get(System.Linq.Expressions.Expression<Func<T, bool>> filter, string? IncludeProperties = null,bool tracked=false)
         {
-            IQueryable<T> query = dbSet.Where(filter);
+            IQueryable<T> query;
+            query = dbSet.Where(filter);
+            
             if (!string.IsNullOrEmpty(IncludeProperties))
             {
                 foreach (var property in IncludeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
                 {
-                   query=query.Include(property);
+                    query = query.Include(property);
                 }
             }
             return query.FirstOrDefault();
         }
 
-        public IEnumerable<T> GetAll(string ? IncludeProperties=null)
+        public IEnumerable<T> GetAll(System.Linq.Expressions.Expression<Func<T, bool>>? filter, string ? IncludeProperties=null)
         {
             IQueryable<T> query = dbSet;
-            if(!string.IsNullOrEmpty(IncludeProperties))
+            if(filter!=null)
+            {
+                query = dbSet.Where(filter);
+            }
+            if (!string.IsNullOrEmpty(IncludeProperties))
             {
                 foreach (var property in IncludeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
                 {

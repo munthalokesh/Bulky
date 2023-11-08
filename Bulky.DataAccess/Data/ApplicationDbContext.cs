@@ -12,7 +12,10 @@ namespace Bulky.DataAccess.Data
         public DbSet<Product> Products { get; set; }
 
         public DbSet<Company> Companies { get; set; }
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<ApplicationUser> applicationUsers { get; set; }
+        public DbSet<OrderHeader> orderHeaders { get; set; }
+        public DbSet<OrderDetail> orderDetails { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Category>().HasData(
