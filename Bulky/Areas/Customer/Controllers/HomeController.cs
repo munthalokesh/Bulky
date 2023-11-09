@@ -41,22 +41,29 @@ namespace Bulky.Areas.Customer.Controllers
         [HttpPost]
         public IActionResult Details(ShoppingCart shoppingCart)
         {
-            var claimsIdentity = (ClaimsIdentity)User.Identity;
-            var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
-            shoppingCart.ApplicationUserId= userId;
-            ShoppingCart cardfromdb=_UnitOfWork.ShoppingCartRepository.Get(u=>u.ApplicationUserId == userId && u.ProductId==shoppingCart.ProductId);
-            if(cardfromdb!=null)
+            if(ModelState.IsValid)
             {
-                cardfromdb.Count += shoppingCart.Count;
-                _UnitOfWork.ShoppingCartRepository.Update(cardfromdb);//entity by default tracks thing to stop tracking changed the I repository
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+                shoppingCart.ApplicationUserId = userId;
+                ShoppingCart cardfromdb = _UnitOfWork.ShoppingCartRepository.Get(u => u.ApplicationUserId == userId && u.ProductId == shoppingCart.ProductId);
+                if (cardfromdb != null)
+                {
+                    cardfromdb.Count += shoppingCart.Count;
+                    _UnitOfWork.ShoppingCartRepository.Update(cardfromdb);//entity by default tracks thing to stop tracking changed the I repository
+                }
+                else
+                {
+                    _UnitOfWork.ShoppingCartRepository.Add(shoppingCart);
+                }
+                _UnitOfWork.Save();
+                TempData["success"] = "Cart updated Successfully";
+                return RedirectToAction(nameof(Index));
             }
             else
             {
-                _UnitOfWork.ShoppingCartRepository.Add(shoppingCart);
-            }
-             _UnitOfWork.Save();
-            TempData["success"] = "Cart updated Successfully";
-            return RedirectToAction(nameof(Index));
+                return View(shoppingCart);
+            }    
         }
         public IActionResult Privacy()
         {

@@ -78,6 +78,7 @@
                         </div>
                         <div class="row pl-2 mb-3">
                             <div class="col-md-4">
+                                <span asp-validation-for="@Model.Count" class="text-danger"></span>
                                 <div class="input-group mb-3">
                                     <span class="input-group-text bg-primary text-white border-0 fw-semibold"
                                           id="inputGroup-sizing-default">
@@ -104,3 +105,9 @@
         </div>
     </div>
 </form>
+@section Scripts{
+    
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}
