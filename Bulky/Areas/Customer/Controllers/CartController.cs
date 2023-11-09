@@ -4,6 +4,8 @@ using Bulky.Utility;
 using Bulky.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe.BillingPortal;
+using Stripe.Checkout;
 using System.Security.Claims;
 
 namespace Bulky.Areas.Customer.Controllers
@@ -106,8 +108,24 @@ namespace Bulky.Areas.Customer.Controllers
             }
 			if (shoppingCartVM.OrderHeader.ApplicationUser.CompanyId.GetValueOrDefault() == 0)
 			{
-				//regular account get paymnet
-				//add stripe
+                //regular account get paymnet
+                //add stripe
+                var options = new Stripe.Checkout.SessionCreateOptions
+                {
+                    SuccessUrl = "",
+                    LineItems = new List<SessionLineItemOptions>
+                    {
+                        new SessionLineItemOptions
+                        {
+                            Price="pricenjuhu",
+                            Quantity=2,
+                        }
+                    },
+                    Mode = "payment",
+
+                };
+                var service=new Stripe.Checkout.SessionService(options);
+                service.Create(options);
 			}
 			else
 			{
