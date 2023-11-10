@@ -4,7 +4,7 @@ using Bulky.Utility;
 using Bulky.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Stripe.BillingPortal;
+
 using Stripe.Checkout;
 using System.Security.Claims;
 
@@ -106,36 +106,67 @@ namespace Bulky.Areas.Customer.Controllers
                 _unitOfWork.OrderDetailRepository.Add(orderDetail);
                 _unitOfWork.Save();
             }
-			if (shoppingCartVM.OrderHeader.ApplicationUser.CompanyId.GetValueOrDefault() == 0)
-			{
+            if (shoppingCartVM.OrderHeader.ApplicationUser.CompanyId.GetValueOrDefault() == 0)
+            {
                 //regular account get paymnet
-                //add stripe
-                var options = new Stripe.Checkout.SessionCreateOptions
+                //add stripe;
+                var domain = "https://localhost:7279/";
+                var options = new SessionCreateOptions
                 {
-                    SuccessUrl = "",
-                    LineItems = new List<SessionLineItemOptions>
-                    {
-                        new SessionLineItemOptions
-                        {
-                            Price="pricenjuhu",
-                            Quantity=2,
-                        }
-                    },
+                    SuccessUrl = domain + $"customer/Cart/OrderConfirmation?Id={shoppingCartVM.OrderHeader.Id}",
+                    CancelUrl = domain + "Customer/Cart/Index",
+                    LineItems = new List<SessionLineItemOptions>(),
                     Mode = "payment",
-
                 };
-                var service=new Stripe.Checkout.SessionService(options);
-                service.Create(options);
-			}
-			else
-			{
-				//company user so direct payment
-				return RedirectToAction(nameof(OrderConfirmation),new {Id=shoppingCartVM.OrderHeader.Id});
-			}
-			return View(shoppingCartVM);
+
+                foreach (var item in shoppingCartVM.ShoppingCartList)
+                {
+                    var sessionLineItem = new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = (long)(item.price * 100), // $20.50 => 2050
+                            Currency = "INR",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = item.Product.Title
+                            }
+                        },
+                        Quantity = item.Count
+                    };
+                    options.LineItems.Add(sessionLineItem);
+                }
+                var service = new SessionService();
+                Session session=service.Create(options);
+                _unitOfWork.OrderHeaderRepository.UpdateStripePaymentID(shoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
+                _unitOfWork.Save();
+                Response.Headers.Add("Location", session.Url);
+                return new StatusCodeResult(303);
+            }
+            
+            
+                //company user so direct payment
+                return RedirectToAction(nameof(OrderConfirmation), new { Id = shoppingCartVM.OrderHeader.Id });
+            
+			
 		}
         public IActionResult OrderConfirmation(int Id)
         {
+            OrderHeader orderHeader=_unitOfWork.OrderHeaderRepository.Get(u=>u.Id == Id);
+            if(orderHeader.PaymentStatus!=SD.PaymentStatusDelayedPayment)
+            {
+                var service=new SessionService();
+                Session session = service.Get(orderHeader.SessionId);
+                if (session.PaymentStatus.ToLower() == "paid")
+                {
+                    _unitOfWork.OrderHeaderRepository.UpdateStripePaymentID(Id, session.Id, session.PaymentIntentId);
+                    _unitOfWork.OrderHeaderRepository.UpdateStatus(Id, SD.StatusApproved, SD.PaymentStatusApproved);
+                    _unitOfWork.Save();
+                }
+            }
+            List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCartRepository.GetAll(u=>u.ApplicationUserId==orderHeader.ApplicationUserId).ToList();
+            _unitOfWork.ShoppingCartRepository.RemoveRange(shoppingCarts);
+            _unitOfWork.Save();
             return View(Id);
         }
 		public ActionResult Plus(int cartId)
