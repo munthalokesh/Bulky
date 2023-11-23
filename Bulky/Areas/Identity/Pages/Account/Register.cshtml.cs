@@ -204,6 +204,7 @@ namespace Bulky.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
+                        TempData["success"] = "Account Created Successfully";
                         return LocalRedirect(returnUrl);
                     }
                 }
